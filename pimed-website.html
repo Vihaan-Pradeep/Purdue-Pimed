@@ -1,0 +1,1695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PiMed – Purdue in Indianapolis Medical Association</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<style>
+  :root {
+    --gold: #C8A55A;
+    --gold-light: #E8D5A3;
+    --gold-dark: #9A7A38;
+    --navy: #0D1B2A;
+    --navy-mid: #1A2F47;
+    --navy-soft: #243D57;
+    --cream: #FAF7F0;
+    --cream-dark: #F0EAD8;
+    --text-main: #1A1A1A;
+    --text-muted: #5A6470;
+    --text-light: #8A95A0;
+    --accent-teal: #2A7F6F;
+    --accent-teal-light: #E0F2EE;
+    --white: #FFFFFF;
+    --radius: 12px;
+    --radius-sm: 6px;
+    --shadow: 0 2px 20px rgba(0,0,0,0.08);
+    --shadow-lg: 0 8px 40px rgba(0,0,0,0.12);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    color: var(--text-main);
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  h1, h2, h3, h4 { font-family: 'DM Serif Display', serif; font-weight: 400; }
+
+  /* NAV */
+  nav {
+    background: var(--navy);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    border-bottom: 1px solid rgba(200,165,90,0.2);
+  }
+
+  .nav-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+  }
+
+  .nav-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .nav-logo-icon {
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'DM Serif Display', serif;
+    font-size: 16px;
+    color: var(--navy);
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+
+  .nav-logo span {
+    color: var(--white);
+    font-family: 'DM Serif Display', serif;
+    font-size: 18px;
+    letter-spacing: 0.3px;
+  }
+
+  .nav-logo em {
+    color: var(--gold);
+    font-style: normal;
+  }
+
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    list-style: none;
+  }
+
+  .nav-links a {
+    color: rgba(255,255,255,0.7);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 400;
+    padding: 8px 14px;
+    border-radius: 6px;
+    transition: all 0.2s;
+    cursor: pointer;
+    letter-spacing: 0.2px;
+  }
+
+  .nav-links a:hover, .nav-links a.active {
+    color: var(--gold);
+    background: rgba(200,165,90,0.1);
+  }
+
+  .nav-join-btn {
+    background: var(--gold) !important;
+    color: var(--navy) !important;
+    font-weight: 600 !important;
+    padding: 8px 18px !important;
+    margin-left: 8px;
+  }
+
+  .nav-join-btn:hover {
+    background: var(--gold-dark) !important;
+    color: var(--white) !important;
+  }
+
+  /* HAMBURGER */
+  .hamburger {
+    display: none;
+    flex-direction: column;
+    gap: 5px;
+    cursor: pointer;
+    padding: 4px;
+    background: none;
+    border: none;
+  }
+
+  .hamburger span {
+    display: block;
+    width: 22px;
+    height: 2px;
+    background: var(--white);
+    border-radius: 2px;
+    transition: all 0.3s;
+  }
+
+  /* PAGES */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* ====== HOME PAGE ====== */
+  .hero {
+    background: var(--navy);
+    min-height: 92vh;
+    display: flex;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-bg-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(200,165,90,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(200,165,90,0.04) 1px, transparent 1px);
+    background-size: 60px 60px;
+  }
+
+  .hero-glow {
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(200,165,90,0.08) 0%, transparent 70%);
+    top: -100px;
+    right: -100px;
+    pointer-events: none;
+  }
+
+  .hero-glow2 {
+    position: absolute;
+    width: 400px;
+    height: 400px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(42,127,111,0.1) 0%, transparent 70%);
+    bottom: -50px;
+    left: 100px;
+    pointer-events: none;
+  }
+
+  .hero-content {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 6rem 2rem 5rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(200,165,90,0.12);
+    border: 1px solid rgba(200,165,90,0.25);
+    color: var(--gold-light);
+    font-size: 12px;
+    font-weight: 500;
+    padding: 6px 14px;
+    border-radius: 100px;
+    margin-bottom: 1.5rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .hero-badge-dot {
+    width: 6px;
+    height: 6px;
+    background: var(--gold);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.8); }
+  }
+
+  .hero h1 {
+    font-size: clamp(2.8rem, 6vw, 5rem);
+    line-height: 1.1;
+    color: var(--white);
+    margin-bottom: 0.4rem;
+    letter-spacing: -1px;
+  }
+
+  .hero h1 em {
+    color: var(--gold);
+    font-style: italic;
+  }
+
+  .hero-sub {
+    font-size: clamp(1rem, 2vw, 1.2rem);
+    color: rgba(255,255,255,0.55);
+    margin-bottom: 2rem;
+    max-width: 580px;
+    line-height: 1.7;
+    font-weight: 300;
+  }
+
+  .hero-pillars {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 2.5rem;
+  }
+
+  .pillar-chip {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.7);
+    font-size: 12px;
+    padding: 5px 14px;
+    border-radius: 100px;
+    letter-spacing: 0.5px;
+    font-weight: 400;
+  }
+
+  .hero-ctas {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 4rem;
+  }
+
+  .btn-primary {
+    background: var(--gold);
+    color: var(--navy);
+    padding: 14px 28px;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'DM Sans', sans-serif;
+    transition: all 0.2s;
+    letter-spacing: 0.2px;
+  }
+
+  .btn-primary:hover { background: var(--gold-dark); transform: translateY(-1px); }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--white);
+    padding: 14px 28px;
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: var(--radius-sm);
+    font-size: 15px;
+    font-weight: 400;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'DM Sans', sans-serif;
+    transition: all 0.2s;
+  }
+
+  .btn-secondary:hover {
+    border-color: rgba(255,255,255,0.5);
+    background: rgba(255,255,255,0.05);
+  }
+
+  .hero-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 1.5rem;
+    max-width: 600px;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .stat-item { }
+
+  .stat-num {
+    font-family: 'DM Serif Display', serif;
+    font-size: 2.2rem;
+    color: var(--gold);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .stat-label {
+    font-size: 12px;
+    color: rgba(255,255,255,0.45);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    font-weight: 400;
+  }
+
+  /* WHAT WE DO */
+  .section {
+    padding: 6rem 2rem;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .section-tag {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--gold-dark);
+    margin-bottom: 0.75rem;
+  }
+
+  .section-title {
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    color: var(--navy);
+    margin-bottom: 1rem;
+    line-height: 1.2;
+  }
+
+  .section-lead {
+    font-size: 1.05rem;
+    color: var(--text-muted);
+    max-width: 600px;
+    margin-bottom: 3rem;
+    line-height: 1.8;
+    font-weight: 300;
+  }
+
+  .what-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .what-card {
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: 1.75rem;
+    border: 1px solid rgba(0,0,0,0.06);
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .what-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--gold);
+    transform: scaleX(0);
+    transition: transform 0.3s;
+    transform-origin: left;
+  }
+
+  .what-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-2px); }
+  .what-card:hover::before { transform: scaleX(1); }
+
+  .what-icon {
+    width: 44px;
+    height: 44px;
+    background: var(--cream-dark);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    margin-bottom: 1rem;
+  }
+
+  .what-card h3 {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--navy);
+    margin-bottom: 0.5rem;
+  }
+
+  .what-card p {
+    font-size: 13.5px;
+    color: var(--text-muted);
+    line-height: 1.7;
+  }
+
+  /* EVENTS HIGHLIGHT */
+  .events-section {
+    background: var(--navy);
+    padding: 6rem 2rem;
+  }
+
+  .events-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .events-section .section-title { color: var(--white); }
+  .events-section .section-tag { color: var(--gold-light); }
+  .events-section .section-lead { color: rgba(255,255,255,0.5); }
+
+  .events-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .event-card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    transition: all 0.3s;
+    cursor: pointer;
+  }
+
+  .event-card:hover {
+    background: rgba(200,165,90,0.08);
+    border-color: rgba(200,165,90,0.25);
+    transform: translateY(-2px);
+  }
+
+  .event-tag {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--gold);
+    background: rgba(200,165,90,0.1);
+    padding: 3px 10px;
+    border-radius: 100px;
+    margin-bottom: 0.75rem;
+  }
+
+  .event-card h3 {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--white);
+    margin-bottom: 0.5rem;
+  }
+
+  .event-card p {
+    font-size: 13px;
+    color: rgba(255,255,255,0.5);
+    line-height: 1.6;
+    margin-bottom: 1rem;
+  }
+
+  .event-meta {
+    font-size: 12px;
+    color: rgba(255,255,255,0.35);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* CTA BAND */
+  .cta-band {
+    background: var(--cream-dark);
+    border-top: 1px solid var(--gold-light);
+    border-bottom: 1px solid var(--gold-light);
+    padding: 5rem 2rem;
+    text-align: center;
+  }
+
+  .cta-band h2 {
+    font-size: clamp(1.8rem, 4vw, 3rem);
+    color: var(--navy);
+    margin-bottom: 0.75rem;
+  }
+
+  .cta-band p {
+    font-size: 1rem;
+    color: var(--text-muted);
+    margin-bottom: 2rem;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .btn-primary-dark {
+    background: var(--navy);
+    color: var(--white);
+    padding: 14px 32px;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'DM Sans', sans-serif;
+    transition: all 0.2s;
+    text-decoration: none;
+  }
+
+  .btn-primary-dark:hover { background: var(--navy-mid); transform: translateY(-1px); }
+
+  /* ====== MISSION PAGE ====== */
+  .mission-hero {
+    background: var(--navy);
+    padding: 6rem 2rem 4rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .mission-hero h1 { color: var(--white); font-size: clamp(2rem, 5vw, 4rem); margin-bottom: 1rem; }
+  .mission-hero p { color: rgba(255,255,255,0.55); font-size: 1.1rem; max-width: 600px; margin: 0 auto; font-weight: 300; }
+
+  .mission-statement {
+    background: var(--navy-soft);
+    border-left: 4px solid var(--gold);
+    padding: 3rem;
+    border-radius: 0 var(--radius) var(--radius) 0;
+    margin: 3rem 0;
+  }
+
+  .mission-statement blockquote {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(1.3rem, 2.5vw, 1.8rem);
+    color: var(--white);
+    line-height: 1.5;
+    font-style: italic;
+  }
+
+  .pillars-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5rem;
+    margin-top: 3rem;
+  }
+
+  .pillar-card {
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: 2rem;
+    text-align: center;
+    border: 1px solid rgba(0,0,0,0.06);
+    transition: box-shadow 0.3s;
+  }
+
+  .pillar-card:hover { box-shadow: var(--shadow-lg); }
+
+  .pillar-num {
+    font-family: 'DM Serif Display', serif;
+    font-size: 3rem;
+    color: var(--gold);
+    line-height: 1;
+    margin-bottom: 0.5rem;
+    opacity: 0.4;
+  }
+
+  .pillar-card h3 {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--navy);
+    margin-bottom: 0.75rem;
+  }
+
+  .pillar-card p { font-size: 13.5px; color: var(--text-muted); line-height: 1.7; }
+
+  .photos-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: auto auto;
+    gap: 12px;
+    margin-top: 3rem;
+  }
+
+  .photo-placeholder {
+    background: var(--navy-mid);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255,255,255,0.2);
+    font-size: 13px;
+    font-weight: 300;
+    letter-spacing: 0.5px;
+  }
+
+  .photo-placeholder:first-child {
+    grid-column: span 2;
+    height: 260px;
+  }
+
+  .photo-placeholder:not(:first-child) { height: 180px; }
+
+  /* ====== TEAM PAGE ====== */
+  .team-hero {
+    background: var(--cream-dark);
+    padding: 5rem 2rem 3rem;
+    border-bottom: 1px solid var(--gold-light);
+  }
+
+  .officers-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-top: 3rem;
+  }
+
+  .member-card {
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: 1.75rem;
+    text-align: center;
+    border: 1px solid rgba(0,0,0,0.06);
+    transition: all 0.3s;
+  }
+
+  .member-card:hover { box-shadow: var(--shadow); transform: translateY(-2px); }
+
+  .member-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: var(--navy);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'DM Serif Display', serif;
+    font-size: 22px;
+    color: var(--gold);
+    margin: 0 auto 1rem;
+  }
+
+  .member-card .role {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--gold-dark);
+    background: rgba(200,165,90,0.1);
+    padding: 3px 10px;
+    border-radius: 100px;
+    margin-bottom: 0.5rem;
+  }
+
+  .member-card h3 {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--navy);
+    margin-bottom: 0.4rem;
+  }
+
+  .member-card p {
+    font-size: 12.5px;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+
+  .advisor-card {
+    background: var(--navy);
+    border-radius: var(--radius);
+    padding: 2.5rem;
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    margin-bottom: 3rem;
+  }
+
+  .advisor-avatar {
+    width: 80px;
+    height: 80px;
+    min-width: 80px;
+    border-radius: 50%;
+    background: rgba(200,165,90,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'DM Serif Display', serif;
+    font-size: 28px;
+    color: var(--gold);
+  }
+
+  .advisor-card h3 {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--white);
+    margin-bottom: 4px;
+  }
+
+  .advisor-card .role { color: var(--gold); font-size: 12px; letter-spacing: 1px; text-transform: uppercase; font-weight: 600; margin-bottom: 0.75rem; }
+  .advisor-card p { font-size: 13.5px; color: rgba(255,255,255,0.55); line-height: 1.7; font-weight: 300; }
+
+  /* ====== EVENTS PAGE ====== */
+  .events-page-hero {
+    background: var(--navy);
+    padding: 5rem 2rem 3rem;
+  }
+
+  .events-filter {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 2.5rem;
+  }
+
+  .filter-btn {
+    background: var(--white);
+    border: 1px solid rgba(0,0,0,0.1);
+    color: var(--text-muted);
+    padding: 7px 16px;
+    border-radius: 100px;
+    font-size: 13px;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    transition: all 0.2s;
+    font-weight: 400;
+  }
+
+  .filter-btn:hover, .filter-btn.active {
+    background: var(--navy);
+    color: var(--white);
+    border-color: var(--navy);
+  }
+
+  .events-list {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .event-list-item {
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: 1.5rem 2rem;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 1.5rem;
+    align-items: center;
+    border: 1px solid rgba(0,0,0,0.06);
+    transition: all 0.2s;
+  }
+
+  .event-list-item:hover { box-shadow: var(--shadow); border-color: rgba(200,165,90,0.3); }
+
+  .event-date-block {
+    text-align: center;
+    min-width: 52px;
+  }
+
+  .event-date-block .month {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--gold-dark);
+  }
+
+  .event-date-block .day {
+    font-family: 'DM Serif Display', serif;
+    font-size: 2rem;
+    color: var(--navy);
+    line-height: 1;
+  }
+
+  .event-list-item h3 {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--navy);
+    margin-bottom: 4px;
+  }
+
+  .event-list-item p {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  .event-type-badge {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    padding: 4px 12px;
+    border-radius: 100px;
+    white-space: nowrap;
+  }
+
+  .badge-community { background: #E0F2EE; color: #0F6E56; }
+  .badge-academic { background: #E6F1FB; color: #185FA5; }
+  .badge-social { background: #FAEEDA; color: #854F0B; }
+  .badge-clinical { background: #FAECE7; color: #993C1D; }
+
+  .upcoming-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 1.5rem;
+  }
+
+  .upcoming-dot {
+    width: 10px;
+    height: 10px;
+    background: var(--accent-teal);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+
+  /* ====== GET INVOLVED PAGE ====== */
+  .involved-hero {
+    background: var(--navy);
+    padding: 5rem 2rem 3rem;
+  }
+
+  .involved-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-top: 3rem;
+  }
+
+  .involved-card {
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: 2rem;
+    border: 1px solid rgba(0,0,0,0.06);
+    transition: all 0.3s;
+  }
+
+  .involved-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-2px); }
+
+  .involved-card-icon {
+    font-size: 28px;
+    margin-bottom: 1rem;
+  }
+
+  .involved-card h3 {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--navy);
+    margin-bottom: 0.5rem;
+  }
+
+  .involved-card p {
+    font-size: 13.5px;
+    color: var(--text-muted);
+    line-height: 1.7;
+    margin-bottom: 1.25rem;
+  }
+
+  .btn-outline {
+    background: transparent;
+    color: var(--navy);
+    border: 1.5px solid var(--navy);
+    padding: 9px 20px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'DM Sans', sans-serif;
+    transition: all 0.2s;
+  }
+
+  .btn-outline:hover { background: var(--navy); color: var(--white); }
+
+  .newsletter-form {
+    background: var(--navy);
+    border-radius: var(--radius);
+    padding: 2.5rem;
+    margin-top: 3rem;
+  }
+
+  .newsletter-form h3 {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--white);
+    margin-bottom: 0.5rem;
+  }
+
+  .newsletter-form p {
+    font-size: 13.5px;
+    color: rgba(255,255,255,0.5);
+    margin-bottom: 1.5rem;
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: 12px;
+    align-items: end;
+  }
+
+  .form-field label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.5);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .form-field input {
+    width: 100%;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.12);
+    color: var(--white);
+    padding: 11px 14px;
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    font-family: 'DM Sans', sans-serif;
+    transition: border-color 0.2s;
+    outline: none;
+  }
+
+  .form-field input:focus { border-color: var(--gold); }
+  .form-field input::placeholder { color: rgba(255,255,255,0.25); }
+
+  .social-links {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 2rem;
+  }
+
+  .social-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    border: none;
+  }
+
+  .social-btn.instagram {
+    background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045);
+    color: white;
+  }
+
+  .social-btn.linkedin { background: #0077B5; color: white; }
+  .social-btn.facebook { background: #1877F2; color: white; }
+  .social-btn.groupme { background: #00AFF0; color: white; }
+
+  .social-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+
+  /* ====== MAP PAGE ====== */
+  .map-hero {
+    background: var(--navy);
+    padding: 5rem 2rem 3rem;
+  }
+
+  #map-container {
+    width: 100%;
+    height: 560px;
+    border-radius: var(--radius);
+    overflow: hidden;
+    border: 1px solid rgba(0,0,0,0.1);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .map-legend {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    margin-top: 1.5rem;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  .legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+  }
+
+  /* FOOTER */
+  footer {
+    background: var(--navy);
+    color: rgba(255,255,255,0.5);
+    padding: 3rem 2rem;
+    border-top: 1px solid rgba(200,165,90,0.15);
+  }
+
+  .footer-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 3rem;
+  }
+
+  .footer-brand h3 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 20px;
+    color: var(--white);
+    margin-bottom: 0.5rem;
+  }
+
+  .footer-brand h3 em { color: var(--gold); font-style: italic; }
+  .footer-brand p { font-size: 13px; line-height: 1.7; font-weight: 300; }
+
+  .footer-col h4 {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.35);
+    margin-bottom: 1rem;
+  }
+
+  .footer-col a {
+    display: block;
+    color: rgba(255,255,255,0.5);
+    text-decoration: none;
+    font-size: 13.5px;
+    padding: 3px 0;
+    cursor: pointer;
+    transition: color 0.2s;
+  }
+
+  .footer-col a:hover { color: var(--gold); }
+
+  .footer-bottom {
+    max-width: 1100px;
+    margin: 2rem auto 0;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  /* RESPONSIVE */
+  @media (max-width: 768px) {
+    .nav-links { display: none; flex-direction: column; position: fixed; top: 64px; left: 0; right: 0; background: var(--navy); padding: 1rem; border-bottom: 1px solid rgba(200,165,90,0.1); gap: 4px; }
+    .nav-links.open { display: flex; }
+    .nav-links a { padding: 12px 16px; }
+    .hamburger { display: flex; }
+    .footer-inner { grid-template-columns: 1fr; gap: 2rem; }
+    .form-row { grid-template-columns: 1fr; }
+    .event-list-item { grid-template-columns: auto 1fr; }
+    .event-list-item .event-type-badge { display: none; }
+    .photos-grid { grid-template-columns: 1fr 1fr; }
+    .photos-grid .photo-placeholder:first-child { grid-column: span 2; }
+    .advisor-card { flex-direction: column; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <div class="nav-logo" onclick="showPage('home')">
+      <div class="nav-logo-icon">π</div>
+      <span>Pi<em>Med</em></span>
+    </div>
+    <button class="hamburger" onclick="toggleMenu()" aria-label="Toggle menu">
+      <span></span><span></span><span></span>
+    </button>
+    <ul class="nav-links" id="navLinks">
+      <li><a onclick="showPage('home')" data-page="home">Home</a></li>
+      <li><a onclick="showPage('mission')" data-page="mission">Mission</a></li>
+      <li><a onclick="showPage('team')" data-page="team">Team</a></li>
+      <li><a onclick="showPage('events')" data-page="events">Events</a></li>
+      <li><a onclick="showPage('map')" data-page="map">Map</a></li>
+      <li><a onclick="showPage('involved')" data-page="involved" class="nav-join-btn">Join Us</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- ===== HOME ===== -->
+<div id="page-home" class="page active">
+  <section class="hero">
+    <div class="hero-bg-grid"></div>
+    <div class="hero-glow"></div>
+    <div class="hero-glow2"></div>
+    <div class="hero-content">
+      <div class="hero-badge"><div class="hero-badge-dot"></div>Purdue University · Indianapolis</div>
+      <h1>Medicine meets<br><em>purpose.</em></h1>
+      <p class="hero-sub">PiMed connects pre-med and health science students with professionals, opportunities, and each other — right in the heart of Indianapolis.</p>
+      <div class="hero-pillars">
+        <span class="pillar-chip">Education</span>
+        <span class="pillar-chip">Inclusivity</span>
+        <span class="pillar-chip">Service</span>
+        <span class="pillar-chip">Innovation</span>
+      </div>
+      <div class="hero-ctas">
+        <a class="btn-primary" onclick="showPage('involved')">Join the Club →</a>
+        <a class="btn-secondary" onclick="showPage('events')">See Events</a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat-item">
+          <div class="stat-num">50+</div>
+          <div class="stat-label">Active Members</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num">20+</div>
+          <div class="stat-label">Events Per Year</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num">10+</div>
+          <div class="stat-label">Partner Orgs</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num">3+</div>
+          <div class="stat-label">Years Running</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-tag">What We Do</div>
+    <h2 class="section-title">Building the next generation<br>of Indianapolis healthcare</h2>
+    <p class="section-lead">From cadaver lab tours to MCAT prep sessions, we create hands-on experiences that prepare you for a career in medicine.</p>
+    <div class="what-grid">
+      <div class="what-card">
+        <div class="what-icon">🩺</div>
+        <h3>Clinical Exposure</h3>
+        <p>Shadow physicians, tour cadaver labs, and connect with hospital professionals across Indianapolis.</p>
+      </div>
+      <div class="what-card">
+        <div class="what-icon">📚</div>
+        <h3>MCAT Prep</h3>
+        <p>Regular study sessions and workshops led by peers and mentors to help you ace the MCAT.</p>
+      </div>
+      <div class="what-card">
+        <div class="what-icon">🩸</div>
+        <h3>Community Service</h3>
+        <p>Organized blood drives, volunteer opportunities, and service projects in the local community.</p>
+      </div>
+      <div class="what-card">
+        <div class="what-icon">🎙️</div>
+        <h3>Speaker Panels</h3>
+        <p>Invite physicians, researchers, and healthcare leaders to share insights on career paths and medicine.</p>
+      </div>
+      <div class="what-card">
+        <div class="what-icon">🔬</div>
+        <h3>Engineering + Med</h3>
+        <p>Bridge biomedical engineering and medicine through collaborative events with IUPUI departments.</p>
+      </div>
+      <div class="what-card">
+        <div class="what-icon">🥧</div>
+        <h3>Social Events</h3>
+        <p>Pie parties, game nights, and casual meetups to build community and friendships that last.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="events-section">
+    <div class="events-inner">
+      <div class="section-tag">Highlights</div>
+      <h2 class="section-title">Recent Events</h2>
+      <p class="section-lead">A snapshot of what we've been up to. Check the Events page for the full archive.</p>
+      <div class="events-grid" id="homeEvents"></div>
+      <div style="margin-top:2rem; text-align:center;">
+        <a class="btn-secondary" onclick="showPage('events')" style="cursor:pointer;">View All Events →</a>
+      </div>
+    </div>
+  </section>
+
+  <div class="cta-band">
+    <h2>Ready to get involved?</h2>
+    <p>Whether you're a first-year pre-med or a senior BME student — PiMed has something for you.</p>
+    <a class="btn-primary-dark" onclick="showPage('involved')">Join PiMed Today →</a>
+  </div>
+</div>
+
+<!-- ===== MISSION ===== -->
+<div id="page-mission" class="page">
+  <section class="mission-hero">
+    <div class="hero-bg-grid"></div>
+    <div style="position:relative;z-index:1;max-width:700px;margin:0 auto;">
+      <div class="hero-badge" style="margin-bottom:1.25rem;"><div class="hero-badge-dot"></div>Our Purpose</div>
+      <h1>Who we are &amp;<br><em>why we exist</em></h1>
+      <p>PiMed was founded on the belief that every aspiring healthcare professional deserves access to mentorship, community, and real-world experience.</p>
+    </div>
+  </section>
+
+  <div class="section">
+    <div style="background:var(--navy);border-radius:var(--radius);padding:3rem;margin-bottom:3rem;">
+      <div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:1rem;">Mission Statement</div>
+      <blockquote style="font-family:'DM Serif Display',serif;font-size:clamp(1.2rem,2.5vw,1.7rem);color:var(--white);line-height:1.55;font-style:italic;">
+        "To connect medical and healthcare professionals with students to foster networking, knowledge-sharing, and career advancement opportunities — while building an inclusive community that serves Indianapolis."
+      </blockquote>
+      <p style="margin-top:1.5rem;font-size:13.5px;color:rgba(255,255,255,0.45);font-weight:300;">Purdue in Indianapolis Medical Association · Est. 2022</p>
+    </div>
+
+    <div class="section-tag">Our Pillars</div>
+    <h2 class="section-title" style="margin-bottom:0.5rem;">Four commitments that<br>guide everything we do</h2>
+    <div class="pillars-grid">
+      <div class="pillar-card">
+        <div class="pillar-num">01</div>
+        <h3>Education</h3>
+        <p>We create spaces where students can learn from professionals and each other — in classrooms, labs, clinics, and everywhere between.</p>
+      </div>
+      <div class="pillar-card">
+        <div class="pillar-num">02</div>
+        <h3>Inclusivity</h3>
+        <p>Medicine is for everyone. We actively work to ensure PiMed is welcoming, diverse, and accessible to all students regardless of background.</p>
+      </div>
+      <div class="pillar-card">
+        <div class="pillar-num">03</div>
+        <h3>Service</h3>
+        <p>We give back. Through blood drives, volunteering, and community outreach, we put our values into action in the Indianapolis community.</p>
+      </div>
+      <div class="pillar-card">
+        <div class="pillar-num">04</div>
+        <h3>Innovation</h3>
+        <p>At Purdue, we sit at the intersection of engineering and medicine. We embrace new ideas and cross-disciplinary collaboration.</p>
+      </div>
+    </div>
+
+    <div style="margin-top:4rem;">
+      <div class="section-tag">Gallery</div>
+      <h2 class="section-title" style="margin-bottom:1rem;">In the community</h2>
+      <div class="photos-grid">
+        <div class="photo-placeholder" style="background:linear-gradient(135deg,#1A2F47,#0D1B2A);font-size:14px;color:rgba(255,255,255,0.3);gap:8px;flex-direction:column;">
+          <span style="font-size:2rem;">📸</span>
+          Add a hero photo here
+        </div>
+        <div class="photo-placeholder" style="background:linear-gradient(135deg,#243D57,#1A2F47);">
+          <span style="color:rgba(255,255,255,0.2);font-size:13px;">Event photo</span>
+        </div>
+        <div class="photo-placeholder" style="background:linear-gradient(135deg,#1A2F47,#243D57);">
+          <span style="color:rgba(255,255,255,0.2);font-size:13px;">Member photo</span>
+        </div>
+        <div class="photo-placeholder" style="background:linear-gradient(135deg,#243D57,#0D1B2A);">
+          <span style="color:rgba(255,255,255,0.2);font-size:13px;">Event photo</span>
+        </div>
+        <div class="photo-placeholder" style="background:linear-gradient(135deg,#0D1B2A,#1A2F47);">
+          <span style="color:rgba(255,255,255,0.2);font-size:13px;">Community photo</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TEAM ===== -->
+<div id="page-team" class="page">
+  <section style="background:var(--navy);padding:5rem 2rem 3rem;">
+    <div class="hero-bg-grid"></div>
+    <div style="max-width:1100px;margin:0 auto;position:relative;z-index:1;">
+      <div class="hero-badge" style="margin-bottom:1rem;"><div class="hero-badge-dot"></div>The People</div>
+      <h1 style="color:var(--white);font-size:clamp(2rem,5vw,4rem);margin-bottom:0.75rem;">Meet the <em style="color:var(--gold);">team</em></h1>
+      <p style="color:rgba(255,255,255,0.5);font-size:1rem;font-weight:300;max-width:520px;">Dedicated students who make PiMed run — from planning events to connecting you with the resources you need.</p>
+    </div>
+  </section>
+
+  <div class="section">
+    <div class="advisor-card">
+      <div class="advisor-avatar">FA</div>
+      <div>
+        <div class="role">Faculty Advisor</div>
+        <h3>Faculty Advisor</h3>
+        <p>Our faculty advisor guides PiMed's mission and helps bridge connections between students and the Purdue Indianapolis academic community. Update this with the advisor's name and bio.</p>
+      </div>
+    </div>
+
+    <div class="section-tag">Executive Board</div>
+    <h2 class="section-title" style="margin-bottom:0.5rem;">Leadership</h2>
+    <div class="officers-grid" id="teamGrid"></div>
+
+    <div style="margin-top:3rem;padding:2rem;background:var(--cream-dark);border-radius:var(--radius);border:1px solid var(--gold-light);">
+      <div style="font-size:12px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--gold-dark);margin-bottom:0.75rem;">On-Call Officers</div>
+      <p style="font-size:14px;color:var(--text-muted);margin-bottom:1rem;">These officers support the board as needed and take on specialized roles.</p>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;">
+        <div style="background:var(--white);border:1px solid rgba(0,0,0,0.06);border-radius:var(--radius-sm);padding:12px 18px;font-size:14px;color:var(--navy);font-weight:500;">🌐 Website Development Officer</div>
+        <div style="background:var(--white);border:1px solid rgba(0,0,0,0.06);border-radius:var(--radius-sm);padding:12px 18px;font-size:14px;color:var(--navy);font-weight:500;">📋 Pre-Professional Prep Officer</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== EVENTS ===== -->
+<div id="page-events" class="page">
+  <section style="background:var(--navy);padding:5rem 2rem 3rem;">
+    <div class="hero-bg-grid"></div>
+    <div style="max-width:1100px;margin:0 auto;position:relative;z-index:1;">
+      <div class="hero-badge" style="margin-bottom:1rem;"><div class="hero-badge-dot"></div>What's Happening</div>
+      <h1 style="color:var(--white);font-size:clamp(2rem,5vw,4rem);margin-bottom:0.75rem;">Events &amp; <em style="color:var(--gold);">Activities</em></h1>
+      <p style="color:rgba(255,255,255,0.5);font-size:1rem;font-weight:300;max-width:560px;">From blood drives to cadaver lab tours — here's everything PiMed has done and what's coming up next.</p>
+    </div>
+  </section>
+
+  <div class="section">
+    <div style="background:var(--accent-teal-light);border:1px solid rgba(42,127,111,0.2);border-radius:var(--radius);padding:1.5rem 2rem;margin-bottom:3rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+      <div>
+        <div style="font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--accent-teal);margin-bottom:4px;">MCAT Prep Sessions</div>
+        <p style="font-size:14px;color:#0F6E56;margin:0;">Weekly study groups are ongoing! Join the GroupMe for schedule updates.</p>
+      </div>
+      <a class="btn-outline" style="border-color:var(--accent-teal);color:var(--accent-teal);" href="https://forms.cloud.microsoft/r/tNsak6tTpc" target="_blank">Sign Up →</a>
+    </div>
+
+    <div class="upcoming-header">
+      <div class="upcoming-dot"></div>
+      <h2 style="font-family:'DM Sans',sans-serif;font-size:16px;font-weight:600;color:var(--navy);">Upcoming Events</h2>
+    </div>
+    <div class="events-list" id="upcomingList" style="margin-bottom:3rem;"></div>
+
+    <div class="section-tag" style="margin-top:3rem;">Past Events</div>
+    <h2 class="section-title" style="margin-bottom:1.5rem;">Everything we've done</h2>
+    <div class="events-filter">
+      <button class="filter-btn active" onclick="filterEvents('all', this)">All</button>
+      <button class="filter-btn" onclick="filterEvents('community', this)">Community</button>
+      <button class="filter-btn" onclick="filterEvents('academic', this)">Academic</button>
+      <button class="filter-btn" onclick="filterEvents('clinical', this)">Clinical</button>
+      <button class="filter-btn" onclick="filterEvents('social', this)">Social</button>
+    </div>
+    <div class="events-list" id="pastEventsList"></div>
+  </div>
+</div>
+
+<!-- ===== GET INVOLVED ===== -->
+<div id="page-involved" class="page">
+  <section style="background:var(--navy);padding:5rem 2rem 3rem;">
+    <div class="hero-bg-grid"></div>
+    <div style="max-width:1100px;margin:0 auto;position:relative;z-index:1;">
+      <div class="hero-badge" style="margin-bottom:1rem;"><div class="hero-badge-dot"></div>Be Part of PiMed</div>
+      <h1 style="color:var(--white);font-size:clamp(2rem,5vw,4rem);margin-bottom:0.75rem;">Get <em style="color:var(--gold);">Involved</em></h1>
+      <p style="color:rgba(255,255,255,0.5);font-size:1rem;font-weight:300;max-width:560px;">Multiple ways to join, connect, and stay updated. Start with whichever feels right for you.</p>
+    </div>
+  </section>
+
+  <div class="section">
+    <div class="involved-grid">
+      <div class="involved-card" style="border-top:3px solid var(--gold);">
+        <div class="involved-card-icon">🎓</div>
+        <h3>Join as a Member</h3>
+        <p>Purdue students — sign up on BoilerLink to become an official PiMed member. Access events, networking, and more.</p>
+        <a class="btn-outline" href="https://boilerlink.purdue.edu" target="_blank">Sign Up on BoilerLink →</a>
+      </div>
+
+      <div class="involved-card" style="border-top:3px solid var(--accent-teal);">
+        <div class="involved-card-icon">📋</div>
+        <h3>Executive Board Application</h3>
+        <p>Want to lead? Apply to join the PiMed executive board and help shape the future of the organization.</p>
+        <a class="btn-outline" href="https://forms.cloud.microsoft/r/tNsak6tTpc" target="_blank" style="border-color:var(--accent-teal);color:var(--accent-teal);">Apply Now →</a>
+      </div>
+
+      <div class="involved-card" style="border-top:3px solid #00AFF0;">
+        <div class="involved-card-icon">💬</div>
+        <h3>Join the GroupMe</h3>
+        <p>Get real-time updates about events, announcements, and opportunities directly on your phone.</p>
+        <a class="btn-outline" href="#" style="border-color:#00AFF0;color:#00AFF0;">Join GroupMe →</a>
+      </div>
+
+      <div class="involved-card">
+        <div class="involved-card-icon">✉️</div>
+        <h3>Contact Us</h3>
+        <p>Questions? Reach out to us directly at <strong>pimed@purdue.edu</strong> or through any of our social media accounts.</p>
+        <a class="btn-outline" href="mailto:pimed@purdue.edu">Email Us →</a>
+      </div>
+    </div>
+
+    <div class="newsletter-form">
+      <h3>📬 Newsletter Signup</h3>
+      <p>Stay in the loop. We send periodic updates about events, opportunities, and PiMed news.</p>
+      <div class="form-row">
+        <div class="form-field">
+          <label>First Name</label>
+          <input type="text" placeholder="Ishita" id="nlName">
+        </div>
+        <div class="form-field">
+          <label>Email Address</label>
+          <input type="email" placeholder="you@purdue.edu" id="nlEmail">
+        </div>
+        <button class="btn-primary" onclick="signupNewsletter()" style="white-space:nowrap;padding:11px 24px;">Subscribe →</button>
+      </div>
+      <div id="nlMsg" style="margin-top:0.75rem;font-size:13px;color:var(--gold);display:none;">✓ You're signed up! Welcome to PiMed.</div>
+    </div>
+
+    <div style="margin-top:3rem;">
+      <div class="section-tag">Socials</div>
+      <h2 class="section-title" style="margin-bottom:1rem;">Follow along</h2>
+      <p style="color:var(--text-muted);font-size:14px;margin-bottom:1.5rem;">Check Instagram for event photos and updates, LinkedIn for professional announcements, and Facebook for community posts.</p>
+      <div class="social-links">
+        <a class="social-btn instagram" href="https://instagram.com/purdue.pimed" target="_blank">📸 Instagram</a>
+        <a class="social-btn linkedin" href="https://linkedin.com" target="_blank">in LinkedIn</a>
+        <a class="social-btn facebook" href="https://facebook.com" target="_blank">f Facebook</a>
+        <a class="social-btn groupme" href="#" target="_blank">💬 GroupMe</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MAP ===== -->
+<div id="page-map" class="page">
+  <section style="background:var(--navy);padding:5rem 2rem 3rem;">
+    <div class="hero-bg-grid"></div>
+    <div style="max-width:1100px;margin:0 auto;position:relative;z-index:1;">
+      <div class="hero-badge" style="margin-bottom:1rem;"><div class="hero-badge-dot"></div>Indianapolis Healthcare Ecosystem</div>
+      <h1 style="color:var(--white);font-size:clamp(2rem,5vw,4rem);margin-bottom:0.75rem;">Explore <em style="color:var(--gold);">Indianapolis</em></h1>
+      <p style="color:rgba(255,255,255,0.5);font-size:1rem;font-weight:300;max-width:560px;">Key hospitals, medical schools, BME departments, and medtech companies across the city — your future professional landscape.</p>
+    </div>
+  </section>
+
+  <div class="section">
+    <div id="map-container"></div>
+    <div class="map-legend">
+      <div class="legend-item"><div class="legend-dot" style="background:#E53935;"></div>Hospitals</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#1565C0;"></div>Medical Schools</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#2E7D32;"></div>BME / Engineering</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#6A1B9A;"></div>MedTech</div>
+    </div>
+    <div style="margin-top:2rem;padding:1.5rem;background:var(--cream-dark);border-radius:var(--radius);border:1px solid var(--gold-light);">
+      <p style="font-size:13.5px;color:var(--text-muted);">📍 <strong>More locations coming soon.</strong> Ishita will send the full list of hospitals, med schools, BME offices, and medtech companies to add to this map.</p>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <h3>Pi<em>Med</em></h3>
+      <p style="margin-top:0.5rem;">Purdue in Indianapolis Medical Association — connecting future healthcare professionals with the resources, mentors, and community they need to thrive.</p>
+      <p style="margin-top:1rem;">Science, Engineering and Technology Building<br>Indianapolis, IN 46202</p>
+    </div>
+    <div class="footer-col">
+      <h4>Navigate</h4>
+      <a onclick="showPage('home')">Home</a>
+      <a onclick="showPage('mission')">Mission</a>
+      <a onclick="showPage('team')">Team</a>
+      <a onclick="showPage('events')">Events</a>
+      <a onclick="showPage('map')">Map</a>
+      <a onclick="showPage('involved')">Get Involved</a>
+    </div>
+    <div class="footer-col">
+      <h4>Connect</h4>
+      <a href="mailto:pimed@purdue.edu">pimed@purdue.edu</a>
+      <a href="https://instagram.com/purdue.pimed" target="_blank">Instagram @purdue.pimed</a>
+      <a href="https://forms.cloud.microsoft/r/tNsak6tTpc" target="_blank">Board Application</a>
+      <a href="https://boilerlink.purdue.edu" target="_blank">BoilerLink</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2025 PiMed – Purdue in Indianapolis Medical Association</span>
+    <span style="color:rgba(255,255,255,0.3);">Education · Inclusivity · Service · Innovation</span>
+  </div>
+</footer>
+
+<script>
+// ==================== DATA ====================
+const EVENTS_DATA = [
+  { id:1, title:"Annual Blood Drive", desc:"Partnered with IU Health to host a campus blood drive. Over 40 units collected.", type:"community", month:"APR", day:"12", year:2025, upcoming:false },
+  { id:2, title:"Physician Speaker Panel", desc:"Three practicing physicians shared their journeys from Purdue to medical school and beyond.", type:"academic", month:"MAR", day:"8", year:2025, upcoming:false },
+  { id:3, title:"Cadaver Lab Tour", desc:"Members got an exclusive guided tour of the anatomy cadaver lab with faculty.",  type:"clinical", month:"FEB", day:"22", year:2025, upcoming:false },
+  { id:4, title:"MCAT Prep Workshop", desc:"Intensive 3-hour session covering CARS and B/B sections with peer mentors.", type:"academic", month:"FEB", day:"10", year:2025, upcoming:false },
+  { id:5, title:"Pie Party Social", desc:"Annual end-of-semester pi(e) party. Great food, great people, great time.", type:"social", month:"DEC", day:"2", year:2024, upcoming:false },
+  { id:6, title:"Engineering + Medicine Panel", desc:"Cross-disciplinary event exploring biomedical engineering career paths.", type:"academic", month:"NOV", day:"15", year:2024, upcoming:false },
+  { id:7, title:"Volunteering Day – Wheeler Mission", desc:"Members volunteered at the Wheeler Mission serving meals to the community.", type:"community", month:"OCT", day:"18", year:2024, upcoming:false },
+  { id:8, title:"Healthcare Career Fair Prep", desc:"Workshop on resume building, elevator pitches, and networking for pre-med students.", type:"academic", month:"SEP", day:"20", year:2024, upcoming:false },
+  { id:9, title:"MCAT Prep Sessions – Summer Series", desc:"Weekly group study sessions all summer. Open to all members. Join the GroupMe for details.", type:"academic", month:"JUN", day:"5", year:2025, upcoming:true },
+  { id:10, title:"Fall Kickoff Social", desc:"Welcome back event for returning members and a chance for new students to meet the board.", type:"social", month:"AUG", day:"28", year:2025, upcoming:true },
+];
+
+const TEAM_DATA = [
+  { name:"President", role:"President", initials:"PR", bio:"Leads the executive board and oversees all PiMed activities and strategic direction." },
+  { name:"Vice President", role:"Vice President", initials:"VP", bio:"Supports the president and coordinates across all officer teams to keep operations smooth." },
+  { name:"Treasurer", role:"Treasurer", initials:"TR", bio:"Manages PiMed's budget, funding requests, and financial reporting." },
+  { name:"Secretary", role:"Secretary", initials:"SE", bio:"Handles meeting minutes, communications, and organizational records." },
+  { name:"Director of Marketing", role:"Director of Marketing", initials:"DM", bio:"Creates promotional materials and manages outreach to grow PiMed's presence on campus." },
+  { name:"Director of Social Media", role:"Director of Social Media", initials:"DS", bio:"Runs our Instagram, LinkedIn, and Facebook accounts with engaging content." },
+  { name:"Events Coordinator", role:"Events Coordinator", initials:"EC", bio:"Plans and executes PiMed's academic and clinical events throughout the year." },
+  { name:"Social Events Coordinator", role:"Social Events Coordinator", initials:"SC", bio:"Organizes social gatherings and community events to build club culture." },
+];
+
+// ==================== ROUTING ====================
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  document.querySelectorAll('.nav-links a').forEach(a => {
+    a.classList.toggle('active', a.getAttribute('data-page') === id);
+  });
+  window.scrollTo(0, 0);
+  document.getElementById('navLinks').classList.remove('open');
+  if (id === 'map') initMap();
+  if (id === 'events') renderAllEvents();
+}
+
+function toggleMenu() {
+  document.getElementById('navLinks').classList.toggle('open');
+}
+
+// ==================== HOME EVENTS ====================
+function renderHomeEvents() {
+  const recent = EVENTS_DATA.filter(e => !e.upcoming).slice(0, 3);
+  const grid = document.getElementById('homeEvents');
+  grid.innerHTML = recent.map(e => `
+    <div class="event-card" onclick="showPage('events')">
+      <div class="event-tag">${e.type}</div>
+      <h3>${e.title}</h3>
+      <p>${e.desc}</p>
+      <div class="event-meta">📅 ${e.month} ${e.day}, ${e.year}</div>
+    </div>
+  `).join('');
+}
+
+// ==================== TEAM ====================
+function renderTeam() {
+  document.getElementById('teamGrid').innerHTML = TEAM_DATA.map(m => `
+    <div class="member-card">
+      <div class="member-avatar">${m.initials}</div>
+      <div class="role">${m.role}</div>
+      <h3>${m.name}</h3>
+      <p>${m.bio}</p>
+    </div>
+  `).join('');
+}
+
+// ==================== EVENTS PAGE ====================
+let currentFilter = 'all';
+function renderAllEvents() {
+  const past = EVENTS_DATA.filter(e => !e.upcoming);
+  const upcoming = EVENTS_DATA.filter(e => e.upcoming);
+
+  const upEl = document.getElementById('upcomingList');
+  upEl.innerHTML = upcoming.map(e => buildEventListItem(e)).join('') || '<p style="color:var(--text-muted);font-size:14px;padding:1rem 0;">Check back soon for upcoming events!</p>';
+
+  renderFilteredEvents(currentFilter);
+}
+
+function filterEvents(type, btn) {
+  currentFilter = type;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderFilteredEvents(type);
+}
+
+function renderFilteredEvents(type) {
+  const past = EVENTS_DATA.filter(e => !e.upcoming && (type === 'all' || e.type === type));
+  document.getElementById('pastEventsList').innerHTML = past.map(e => buildEventListItem(e)).join('');
+}
+
+const BADGE_MAP = { community:'badge-community', academic:'badge-academic', social:'badge-social', clinical:'badge-clinical' };
+
+function buildEventListItem(e) {
+  return `
+    <div class="event-list-item">
+      <div class="event-date-block">
+        <div class="month">${e.month}</div>
+        <div class="day">${e.day}</div>
+      </div>
+      <div>
+        <h3>${e.title}</h3>
+        <p>${e.desc}</p>
+      </div>
+      <div class="event-type-badge ${BADGE_MAP[e.type] || ''}">${e.type}</div>
+    </div>
+  `;
+}
+
+// ==================== NEWSLETTER ====================
+function signupNewsletter() {
+  const name = document.getElementById('nlName').value.trim();
+  const email = document.getElementById('nlEmail').value.trim();
+  if (!name || !email) { alert('Please enter your name and email.'); return; }
+  document.getElementById('nlMsg').style.display = 'block';
+  document.getElementById('nlName').value = '';
+  document.getElementById('nlEmail').value = '';
+}
+
+// ==================== MAP ====================
+let mapInitialized = false;
+function initMap() {
+  if (mapInitialized) return;
+  mapInitialized = true;
+
+  const map = L.map('map-container').setView([39.768, -86.158], 12);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    attribution: '© OpenStreetMap contributors © CARTO',
+    maxZoom: 19
+  }).addTo(map);
+
+  const locations = [
+    { lat:39.7684, lng:-86.1581, name:"IU Health Methodist Hospital", type:"hospital", desc:"Major downtown hospital — one of Indiana's largest healthcare systems." },
+    { lat:39.7759, lng:-86.1720, name:"Eskenazi Health", type:"hospital", desc:"Safety-net hospital serving Marion County. Great volunteer opportunities." },
+    { lat:39.7500, lng:-86.1769, name:"IU School of Medicine", type:"medschool", desc:"Largest medical school in the US by enrollment. Key PiMed partner institution." },
+    { lat:39.7742, lng:-86.1759, name:"Purdue University Indianapolis (SET Building)", type:"bme", desc:"Science, Engineering and Technology Building — PiMed home base." },
+    { lat:39.9063, lng:-86.0706, name:"Riverview Health", type:"hospital", desc:"Community hospital in Noblesville with excellent student programs." },
+    { lat:39.7684, lng:-86.1050, name:"Community Health Network", type:"hospital", desc:"Comprehensive health system with multiple Indianapolis campuses." },
+    { lat:39.8074, lng:-86.1447, name:"Roche Diagnostics", type:"medtech", desc:"Global leader in diagnostics and personalized healthcare solutions." },
+    { lat:39.7596, lng:-86.3022, name:"Lilly Corporate Center (Eli Lilly)", type:"medtech", desc:"HQ of one of the world's largest pharmaceutical companies." },
+    { lat:39.7869, lng:-86.1813, name:"Indiana University Health Neuroscience Center", type:"hospital", desc:"Specialized neuroscience and brain health research and treatment." },
+  ];
+
+  const colors = { hospital:'#E53935', medschool:'#1565C0', bme:'#2E7D32', medtech:'#6A1B9A' };
+  const typeLabels = { hospital:'Hospital', medschool:'Medical School', bme:'BME / Engineering', medtech:'MedTech' };
+
+  locations.forEach(loc => {
+    const color = colors[loc.type] || '#555';
+    const icon = L.divIcon({
+      html: `<div style="width:14px;height:14px;border-radius:50%;background:${color};border:2.5px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.3);"></div>`,
+      iconSize:[14,14], iconAnchor:[7,7], popupAnchor:[0,-10], className:''
+    });
+    L.marker([loc.lat, loc.lng], { icon }).addTo(map).bindPopup(`
+      <div style="font-family:'DM Sans',sans-serif;min-width:200px;">
+        <div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:${color};margin-bottom:4px;">${typeLabels[loc.type]}</div>
+        <strong style="font-size:14px;color:#1A1A1A;">${loc.name}</strong>
+        <p style="font-size:12px;color:#5A6470;margin:6px 0 0;line-height:1.5;">${loc.desc}</p>
+      </div>
+    `, { maxWidth: 240 });
+  });
+}
+
+// ==================== INIT ====================
+renderHomeEvents();
+renderTeam();
+renderAllEvents();
+</script>
+</body>
+</html>
