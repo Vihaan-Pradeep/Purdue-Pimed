@@ -66,8 +66,6 @@ Types: `hospital`, `medschool`, `bme`, `medtech`.
 2. If editing locally, upload the new file to GitHub
 3. Changes go live automatically within ~30 seconds
 
-For bigger changes, paste the file into a Claude chat and describe what you want — Claude can make targeted edits without rewriting the whole file.
-
 ---
 
 ## Contact
